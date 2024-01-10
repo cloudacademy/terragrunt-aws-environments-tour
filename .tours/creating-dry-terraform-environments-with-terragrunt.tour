@@ -50,7 +50,7 @@
     },
     {
       "directory": "",
-      "description": "These commands use the `sed` tool to rename the `Production` environment variable to `Development`, as well as update the VPC CIDR block ranges defined in the **environment_vars.yaml** file:\n\n>> sed -i '' 's/Production/Development/g' ./development/environment_vars.yaml && sed -i '' 's+10.0.0.0/16+10.1.0.0/16+g' ./development/environment_vars.yaml && sed -i '' 's+10.0.0.0/24+10.1.0.0/24+g' ./development/environment_vars.yaml ",
+      "description": "These commands use the `sed` tool to rename the `Production` environment variable to `Development`, as well as update the VPC CIDR block ranges defined in the **environment_vars.yaml** file:\n\n>> sed -i 's/Production/Development/g' ./development/environment_vars.yaml && sed -i 's+10.0.0.0/16+10.1.0.0/16+g' ./development/environment_vars.yaml && sed -i 's+10.0.0.0/24+10.1.0.0/24+g' ./development/environment_vars.yaml ",
       "title": "Development Variables"
     },
     {
@@ -60,7 +60,7 @@
     },
     {
       "directory": "",
-      "description": "Terragrunt detects that the S3 backend resources don't exist and prompts to create them.\n\nThe S3 backend components are created and configured to best practices. The entire Development environment is deployed with a separate remote state file with this single command.\n\nThe deployment may take up to two minutes to complete. As you follow along with the terminal output, you will notice the Terraform **init** process occurring for each module, followed by the **apply** or deployment. \n\nThe order of deployment is VPC, followed by Network, and finally, the EC2 instance.\n\nEach remote module is downloaded from the GitHub repository to the local directory in the .terragrunt-cache folder.",
+      "description": "Terragrunt detects that the S3 backend resources don't exist and prompts to create them.\n\nThe S3 backend components are created and configured to best practices. The entire Development environment is deployed with a separate remote state file with this single command.\n\nThe deployment will take 3-4 minutes to complete. As you follow along with the terminal output, you will notice the Terraform **init** process occurring for each module, followed by the **apply** or deployment. \n\nThe order of deployment is VPC, followed by Network, and finally, the EC2 instance.\n\nEach remote module is downloaded from the GitHub repository to the local directory in the .terragrunt-cache folder.",
       "title": "Deployment"
     },
     {

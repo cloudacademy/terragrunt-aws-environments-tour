@@ -1,0 +1,72 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Creating DRY Terraform Environments with Terragrunt",
+  "steps": [
+    {
+      "directory": "production",
+      "description": "The Terraform project is split into a directory for each component of the application. The VPC, Network (subnet), and EC2 instance. \n\nThe Terraform configuration for each component contains a single **terragrunt.hcl** file that has been configured with all the values for deploying that component. By using Terragrunt, you can see the configuration for each environment is slimmed down. Each component will utilize a remote Terraform module to deploy resources to AWS.\n\nNotice there is an **environment_vars.yaml** file at the root of the directory. This file contains the important configuration data for customizing the environment which will be used in each subfolder to make the Terraform configurations DRY ( Don't Repeat Yourself).",
+      "title": "Introduction"
+    },
+    {
+      "file": "production/terragrunt.hcl",
+      "description": "The **production/terragrunt.hcl** will serve as the parent configuration file for the project.\n\nThe `generate` block is used to configure the Terraform AWS provider for each component in the project. This provider block is typically used in the **main.tf** file of a module or project. It has been centralized in this root-level **terragrunt.hcl** file to simplify each component.",
+      "line": 1,
+      "title": "Root Terragrunt"
+    },
+    {
+      "file": "production/terragrunt.hcl",
+      "description": "The `remote_state` block will configure the Amazon S3 bucket and DynamoDB table used to store and lock the remote state file. This remote state is defined once for the entire project, and each child component will store their state files in the S3 bucket created.\n\nThe `key` attribute will be resolved to match the environments of the project, i.e. `Production/terraform.tfstate`.\n\nThe `locals` block at the bottom of this file decodes the root-level **environment_vars.yaml** file and allows the variables to be accessed locally.",
+      "line": 22,
+      "title": "Remote State"
+    },
+    {
+      "file": "production/environment_vars.yaml",
+      "description": "These environment variables will be accessed by each child module of this project. The variables defined here are the unique configurations for the Production environment.",
+      "line": 8,
+      "title": "Environment Variables"
+    },
+    {
+      "file": "production/ec2/terragrunt.hcl",
+      "description": "Each remote module will contain the configuration blocks covered in the next few lab steps.\n\nThe first `terraform` block configures the remote module source for this EC2 instance. \n\nIn this example, the source of the module is in a GitHub repository tagged with version `0.0.1`. This is a great strategy as the module can then be versioned and promoted throughout different environments. This prevents having to maintain **main.tf** or **variable.tf** files within the configuration directory and gives the DRY effect to the infrastructure code. \n\nTo view the Terraform configurations used for each module, visit the [terraform-aws-calabsmodules GitHub repository](https://github.com/cloudacademy/terraform-aws-calabmodules/tree/main).\n\n*Note*: These modules are made for lab purposes only and are not meant to be used in a production environment.",
+      "line": 1,
+      "title": "EC2 Module Review"
+    },
+    {
+      "file": "production/ec2/terragrunt.hcl",
+      "description": "The `dependency` blocks indicate the EC2 instance depends on the VPC and Subnet resources. Terragrunt will coordinate the deployment based on these dependency blocks. ",
+      "line": 6,
+      "title": "Dependencies"
+    },
+    {
+      "file": "production/ec2/terragrunt.hcl",
+      "description": "The `include` blocks of each module will be the same. The `find_in_parent_folders()` function will utilize the root-level **terragrunt.hcl** file to configure each component. \n\nThe `inputs` block defines the required input variables for the EC2 module. Notice how this block is a combination of `local` and `dependency` variables. \n\nThe `dependency` variables will resolve the output variables of the VPC and Network components when the project is deployed. The `local` variables are sourced from the root-level **environment_vars.yaml** file.",
+      "line": 20,
+      "title": "Include & Inputs"
+    },
+    {
+      "directory": "",
+      "description": "Now that you've covered the Production environment's configuration, you can create a copy of the environment to use for the Development environment.\n\nClick the following command to run it in the terminal window:\n\n>> cp -p -a ./production/. ./development/\n\nThis command is simply copying the folder structure into a new root-level directory named `development`.",
+      "title": "Development Environment"
+    },
+    {
+      "directory": "",
+      "description": "These commands use the `sed` tool to rename the `Production` environment variable to `Development`, as well as update the VPC CIDR block ranges defined in the **environment_vars.yaml** file:\n\n>> sed -i '' 's/Production/Development/g' ./development/environment_vars.yaml && sed -i '' 's+10.0.0.0/16+10.1.0.0/16+g' ./development/environment_vars.yaml && sed -i '' 's+10.0.0.0/24+10.1.0.0/24+g' ./development/environment_vars.yaml ",
+      "title": "Development Variables"
+    },
+    {
+      "directory": "",
+      "description": "To deploy the Development environment run the following commands and observe the output:\n\n>> cd development && terragrunt run-all apply\n\nEnter *y* when prompted to configure the remote state and deploy the resources. You will be prompted twice. ",
+      "title": "Apply"
+    },
+    {
+      "directory": "",
+      "description": "Terragrunt detects that the S3 backend resources don't exist and prompts to create them.\n\nThe S3 backend components are created and configured to best practices. The entire Development environment is deployed with a separate remote state file with this single command.\n\nThe deployment may take up to two minutes to complete. As you follow along with the terminal output, you will notice the Terraform **init** process occurring for each module, followed by the **apply** or deployment. \n\nThe order of deployment is VPC, followed by Network, and finally, the EC2 instance.\n\nEach remote module is downloaded from the GitHub repository to the local directory in the .terragrunt-cache folder.",
+      "title": "Deployment"
+    },
+    {
+      "directory": "",
+      "description": "Using Terragrunt with remote Terraform modules and local variables allows developers to deploy a new version of the environment using a centralized configuration. \n\nReturn to the Cloud Academy Lab browser tab and run the validation check associated with this lab step.",
+      "title": "Complete"
+    }
+  ]
+}
